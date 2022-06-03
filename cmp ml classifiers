@@ -1,0 +1,170 @@
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from matplotlib import pyplot as plt
+%matplotlib inline
+from matplotlib.colors import ListedColormap
+import warnings
+warnings.filterwarnings("ignore")
+from math import sqrt
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import RandomizedSearchCV
+
+from sklearn.model_selection import cross_val_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import roc_curve, auc, roc_auc_score, confusion_matrix
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
+from matplotlib.colors import ListedColormap
+from sklearn.metrics import accuracy_score
+import os
+
+
+df = pd.read_csv("indian_liver_patient (1).csv")
+
+df.shape
+
+df.head()
+
+df.hist(figsize=(15,15), xrot=-45, bins=10) 
+
+plt.show()
+
+df.describe()
+
+def partition(x):
+    if x == 2:
+        return 0
+    return 1
+
+df['Label'] = df['Label'].map(partition)
+
+df.describe(include=['object'])
+
+df[df['Gender'] == 'Male'][['Label', 'Gender']].head()
+
+def partition(x):
+    if x =='Male':
+        return 0
+    return 1
+
+df['Gender'] = df['Gender'].map(partition)
+
+df.corr()
+
+# remove outliers
+df = df.drop_duplicates()
+print( df.shape )
+
+sns.boxplot(df.Aspartate_Aminotransferase)
+
+df.Aspartate_Aminotransferase.sort_values(ascending=False).head()
+
+df = df[df.Aspartate_Aminotransferase <=3000 ]
+df.shape
+
+sns.boxplot(df.Aspartate_Aminotransferase)
+
+df.Aspartate_Aminotransferase.sort_values(ascending=False).head()
+
+df = df[df.Aspartate_Aminotransferase <=2500 ]
+df.shape
+
+df.isnull().values.any()
+
+df=df.dropna(how='any')  
+df.shape
+
+# data preparation
+y = df.Label
+X = df.drop('Label', axis=1)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, 
+                                                    test_size=0.2, 
+                                                    random_state=1234,
+                                                    stratify=df.Label)
+
+print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+
+# data standardization
+train_mean = X_train.mean()
+train_std = X_train.std()
+
+X_train = (X_train - train_mean) / train_std
+
+X_train.describe()
+
+X_test = (X_test - train_mean) / train_std
+
+X_test.describe()
+
+#logistic regression
+model = LogisticRegression()
+model.fit(X_train,y_train)
+model.score(X_train,y_train)
+
+model.coef_
+
+model.intercept_
+
+pred = model.predict(X_test)
+pred
+
+confusion_matrix(y_test, pred).T
+
+print(accuracy_score(y_test, pred))
+
+print(classification_report(y_test, pred))
+
+#decision tree
+from sklearn import tree
+model = tree.DecisionTreeClassifier(criterion='gini')
+
+model.fit(X_train,y_train)
+model.score(X_train,y_train)
+
+pred = model.predict(X_test)
+pred
+
+confusion_matrix(y_test, pred).T
+
+accuracy_score(y_test, pred)
+
+print(classification_report(y_test, pred))
+
+#svm
+from sklearn import svm
+model = svm.SVC()
+model.fit(X_train,y_train)
+model.score(X_train,y_train)
+
+pred = model.predict(X_test)
+pred
+
+
+confusion_matrix(y_test, pred).T
+
+accuracy_score(y_test, pred)
+
+print(classification_report(y_test, pred))
+
+#GaussianNB
+from sklearn.naive_bayes import GaussianNB
+model= GaussianNB()
+model.fit(X_train,y_train)
+model.score(X_train,y_train)
+
+pred = model.predict(X_test)
+pred
+
+confusion_matrix(y_test, pred).T
+
+accuracy_score(y_test, pred)
+
+print(classification_report(y_test, pred))
+
